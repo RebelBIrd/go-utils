@@ -36,18 +36,21 @@ func InitMysql(conf MysqlConf) {
 			mEngine = nil
 			logutl.Error(err.Error())
 		} else {
+			mEngine = &conf
 			mEngine.SetMapper(core.SameMapper{})
 			mEngine.SetMaxOpenConns(25)
 			mEngine.SetMaxIdleConns(5)
-			mEngine = &conf
 		}
 	}
 }
 
-func (mEngine *MysqlConf) InitTables(beans ...interface{}) {
+func (mEngine *MysqlConf) InitTables(initBlock func(interface{}), beans ...interface{}) {
 	for _, table := range beans {
 		if isExist, err := mEngine.IsTableExist(table); err != nil || !isExist {
 			_ = mEngine.CreateTables(table)
+			if initBlock != nil {
+				initBlock(table)
+			}
 		} else {
 			_ = mEngine.Sync(table)
 		}

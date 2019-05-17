@@ -1,5 +1,7 @@
 package httputl
 
+import "github.com/qinyuanmao/go-utils/pageutl"
+
 type Response struct {
 	Code   ResponseCode `json:"code"`
 	Msg    ResponseMsg  `json:"msg"`
@@ -7,18 +9,15 @@ type Response struct {
 }
 
 type RespArray struct {
-	PageIndex int           `json:"pageIndex"`
-	PageCount int           `json:"pageCount"`
-	PageSize  int           `json:"pageSize"`
-	Total     int           `json:"total"`
-	Data      []interface{} `json:"data"`
+	PageIndex int         `json:"pageIndex"`
+	PageCount int         `json:"pageCount"`
+	PageSize  int         `json:"pageSize"`
+	Total     int         `json:"total"`
+	Data      interface{} `json:"data"`
 }
 
-func RespArraySuccess(index, size, total int, data []interface{}) Response {
-	count := total / size
-	if total % size > 0 {
-		count += 1
-	}
+func RespArraySuccess(index, size, total int, data interface{}) Response {
+	count := pageutl.GetPageCount(size, total)
 	return Response{
 		Code: RPCD_Success,
 		Msg:  RPSTR_SUCCESS,
@@ -50,7 +49,21 @@ func RespFailed(code int, msg string) Response {
 func RespParamNoFound(paramKey string) Response {
 	return Response{
 		Code: RPCD_ParamNoFound,
-		Msg:  RPSTR_ParamNoFound + "paramKey",
+		Msg:  RPSTR_ParamNoFound + ResponseMsg(paramKey),
+	}
+}
+
+func RespUnLogin() Response {
+	return Response{
+		Code: RPCD_UnLogin,
+		Msg:  RPSTR_UnLogin,
+	}
+}
+
+func RespUnRegiste() Response {
+	return Response{
+		Code: RPCD_UserUnRegister,
+		Msg:  RPSTR_UserUnRegister,
 	}
 }
 
@@ -83,15 +96,19 @@ const (
 	RPCD_ServerError
 	RPCD_ParamNoFound
 
+	RPCD_UnLogin
 	RPCD_PathNoFound
+	RPCD_UserUnRegister
 )
 
 type ResponseMsg string
 
 const (
-	RPSTR_SUCCESS      ResponseMsg = "成功！"
-	RPSTR_FAILED       ResponseMsg = "失败！"
-	RPSTR_ServerError  ResponseMsg = "服务器内部错误！"
-	RPSTR_ParamNoFound ResponseMsg = "缺少请求参数："
-	RPSTR__PathNoFound ResponseMsg = "404，未找到请求路径！"
+	RPSTR_SUCCESS        ResponseMsg = "成功！"
+	RPSTR_FAILED         ResponseMsg = "失败！"
+	RPSTR_ServerError    ResponseMsg = "服务器内部错误！"
+	RPSTR_ParamNoFound   ResponseMsg = "缺少请求参数："
+	RPSTR_UnLogin        ResponseMsg = "用户未登录."
+	RPSTR__PathNoFound   ResponseMsg = "404，未找到请求路径！"
+	RPSTR_UserUnRegister ResponseMsg = "用户未注册"
 )

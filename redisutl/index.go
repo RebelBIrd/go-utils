@@ -35,7 +35,7 @@ func InitRedis(conf RedisConf) {
 			Addr:     conf.Url,
 		}
 		if conf.Username != "" {
-			redisUrl, _ := url.Parse(strutl.ConnString("redis://", this.Username, ":", this.Password, "@", this.Url))
+			redisUrl, _ := url.Parse(strutl.ConnString("redis://", conf.Username, ":", conf.Password, "@", conf.Url))
 			redisOpt.Addr = redisUrl.Host
 		}
 		conf.Client = redis.NewClient(&redisOpt)
