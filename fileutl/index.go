@@ -1,6 +1,7 @@
 package fileutl
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -19,6 +20,19 @@ func (this Manager) Write(content string) {
 		}
 	})
 }
+
+func (this Manager) WriteBase64(content string) {
+	if !this.IsExist() {
+		_ = this.Create()
+	}
+	buffer, _ := base64.StdEncoding.DecodeString(content)
+	this.Open(func(e error, file *os.File) {
+		if e == nil {
+			_, _ = file.Write(buffer)
+		}
+	})
+}
+
 
 func (this *Manager) Create() error {
 	file, err := os.Create(this.Path + this.Name)
