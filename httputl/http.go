@@ -2,8 +2,12 @@ package httputl
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"path"
 	"strconv"
 	"strings"
 )
@@ -82,6 +86,32 @@ func doNetWork(param HttpParam) {
 					param.Result.IsSuccessChan <- true
 				}
 			}
+		}
+	}
+}
+
+func DownloadFile(url string, savePath *string, channel chan error)  {
+	res, err := http.Get(url)
+	defer res.Body.Close()
+	if err != nil {
+		fmt.Println(err.Error())
+		channel <- err
+	} else {
+		if !strings.HasSuffix(*savePath, "/") {
+			*savePath += "/"
+		}
+		*savePath += path.Base(url)
+		f, err := os.Create(*savePath)
+		if err != nil {
+			fmt.Println(err.Error())
+			channel <- err
+		}
+		_, err = io.Copy(f, res.Body)
+		if err != nil {
+			fmt.Println(err.Error())
+			channel <- err
+		} else {
+			channel <- nil
 		}
 	}
 }
