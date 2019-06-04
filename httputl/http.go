@@ -90,7 +90,7 @@ func doNetWork(param HttpParam) {
 	}
 }
 
-func DownloadFile(url string, savePath *string, channel chan error, processChan chan int)  {
+func DownloadFile(url string, savePath *string, channel chan<- error, processChan chan<- int)  {
 	var (
 		fSize int64
 		buf = make([]byte, 32 * 1024)
@@ -143,12 +143,13 @@ func DownloadFile(url string, savePath *string, channel chan error, processChan 
 					channel <- er
 					break
 				} else {
+					close(processChan)
 					channel <- nil
 					break
 				}
 			}
 			if processChan != nil {
-				processChan <- int(written/fSize)
+				processChan <- int(written/fSize * 100)
 			}
 		}
 	}
