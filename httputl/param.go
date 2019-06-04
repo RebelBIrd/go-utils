@@ -15,7 +15,7 @@ type HttpParam struct {
 	Url     string
 	Header  map[string]string
 	Body    map[string]interface{}
-	Result HttpResponse
+	Result *HttpResponse
 }
 
 type HttpResponse struct {

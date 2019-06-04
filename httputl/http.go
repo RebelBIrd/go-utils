@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-func DoHttp(methodType MethodType, url string, header map[string]string, body map[string]interface{}, response HttpResponse) {
+func DoHttp(methodType MethodType, url string, header map[string]string, body map[string]interface{}, response *HttpResponse) {
 	response.IsSuccessChan = make(chan bool)
 	doNetWork(HttpParam{
 		Method: methodType,
@@ -90,9 +90,13 @@ func doNetWork(param HttpParam) {
 	}
 }
 
-func DownloadFile(url string, savePath *string, channel chan error)  {
+func DownloadFile(url string, savePath *string, channel chan error, processChan chan int)  {
+	var (
+		fSize int64
+		buf = make([]byte, 32 * 1024)
+		written int64
+	)
 	res, err := http.Get(url)
-	defer res.Body.Close()
 	if err != nil {
 		fmt.Println(err.Error())
 		channel <- err
@@ -101,17 +105,51 @@ func DownloadFile(url string, savePath *string, channel chan error)  {
 			*savePath += "/"
 		}
 		*savePath += path.Base(url)
+		fSize, err = strconv.ParseInt(res.Header.Get("Content-Length"), 10, 32)
+		if err != nil {
+			fmt.Println(err)
+		}
 		f, err := os.Create(*savePath)
 		if err != nil {
 			fmt.Println(err.Error())
 			channel <- err
 		}
+		defer res.Body.Close()
 		_, err = io.Copy(f, res.Body)
 		if err != nil {
 			fmt.Println(err.Error())
 			channel <- err
 		} else {
 			channel <- nil
+		}
+		for {
+			nr, er := res.Body.Read(buf)
+			if nr > 0 {
+				nw, ew := f.Write(buf[0:nr])
+				if nw > 0 {
+					written += int64(nw)
+				}
+				if ew != nil {
+					channel <- ew
+					break
+				}
+				if nr != nw {
+					channel <- io.ErrShortWrite
+					break
+				}
+			}
+			if er != nil {
+				if er != io.EOF {
+					channel <- er
+					break
+				} else {
+					channel <- nil
+					break
+				}
+			}
+			if processChan != nil {
+				processChan <- int(written/fSize)
+			}
 		}
 	}
 }
