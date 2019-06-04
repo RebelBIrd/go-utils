@@ -90,7 +90,7 @@ func doNetWork(param HttpParam) {
 	}
 }
 
-func DownloadFile(url string, savePath *string, channel chan<- error, processChan chan<- int)  {
+func DownloadFile(url string, savePath *string, channel chan<- error, processChan chan<- float64)  {
 	var (
 		fSize int64
 		buf = make([]byte, 32 * 1024)
@@ -108,20 +108,16 @@ func DownloadFile(url string, savePath *string, channel chan<- error, processCha
 		fSize, err = strconv.ParseInt(res.Header.Get("Content-Length"), 10, 32)
 		if err != nil {
 			fmt.Println(err)
+			channel <- err
+			return
 		}
 		f, err := os.Create(*savePath)
 		if err != nil {
 			fmt.Println(err.Error())
 			channel <- err
+			return
 		}
 		defer res.Body.Close()
-		_, err = io.Copy(f, res.Body)
-		if err != nil {
-			fmt.Println(err.Error())
-			channel <- err
-		} else {
-			channel <- nil
-		}
 		for {
 			nr, er := res.Body.Read(buf)
 			if nr > 0 {
@@ -143,13 +139,14 @@ func DownloadFile(url string, savePath *string, channel chan<- error, processCha
 					channel <- er
 					break
 				} else {
+					processChan <- 100
 					close(processChan)
 					channel <- nil
 					break
 				}
 			}
 			if processChan != nil {
-				processChan <- int(written/fSize * 100)
+				processChan <- float64(written * 100) / float64(fSize)
 			}
 		}
 	}
