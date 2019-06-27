@@ -16,5 +16,5 @@ func GetTimeString(t time.Time) string {
 
 func GetDate() string {
 	y, m, d := time.Now().Date()
-	return strutl.ConnString(strconv.Itoa(y), "-", m.String(), "-", strconv.Itoa(d))
+	return strutl.ConnString(strconv.Itoa(y), "-", strconv.Itoa(int(m)), "-", strconv.Itoa(d))
 }

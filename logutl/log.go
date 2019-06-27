@@ -10,7 +10,7 @@ var fileManager = fileutl.Manager{
 	Path: "log/",
 }
 
-func init() {
+func InitLog() {
 	fileManager.Name = time.Now().Format("2006-1-2_15-04-05") + ".log"
 	_ = fileManager.Create()
 }

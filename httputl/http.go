@@ -7,9 +7,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"path"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func DoHttp(methodType MethodType, url string, header map[string]string, body map[string]interface{}, response *HttpResponse) {
@@ -150,4 +152,18 @@ func DownloadFile(url string, savePath *string, channel chan<- error, processCha
 			}
 		}
 	}
+}
+
+func NetWorkStatus(url string) bool {
+	cmd := exec.Command("ping", url, "-c", "1", "-W", "5")
+	fmt.Println("NetWorkStatus Start:", time.Now().Unix())
+	err := cmd.Run()
+	fmt.Println("NetWorkStatus End  :", time.Now().Unix())
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	} else {
+		fmt.Println("Net Status , OK")
+	}
+	return true
 }
