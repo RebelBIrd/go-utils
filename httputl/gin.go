@@ -5,10 +5,60 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/qinyuanmao/go-utils/logutl"
 	"io/ioutil"
+	"net/http"
 	"strconv"
 )
 
-func GetParam(ctx *gin.Context, key string) string{
+type BaseGroup struct {
+	Path       string
+	Routers    []BaseRouter
+	Middleware gin.HandlerFunc
+	Func       func(group *gin.RouterGroup)
+}
+
+type BaseRouter struct {
+	Type       MethodType
+	Path       string
+	Middleware gin.HandlerFunc
+	Handler    gin.HandlerFunc
+}
+
+func StartServer(groups []BaseGroup, routers []BaseRouter, port int, init func(engine *gin.Engine)) {
+	engine := gin.Default()
+	engine.NoRoute(func(context *gin.Context) {
+		context.JSON(http.StatusOK, Resp404Failed())
+	})
+	for _, group := range groups {
+		group.Func = func(g *gin.RouterGroup) {
+			for _, router := range group.Routers {
+				router.addPath(g)
+			}
+		}
+		group.Func(engine.Group(group.Path, group.Middleware))
+	}
+	for _, router := range routers {
+		engine.GET(router.Path, router.Handler, router.Middleware)
+	}
+	init(engine)
+	if err := engine.Run(":" + strconv.Itoa(port)); err != nil {
+		logutl.Error(err.Error())
+	}
+}
+
+func (router *BaseRouter) addPath(group *gin.RouterGroup) {
+	switch router.Type {
+	case POST:
+		group.POST(router.Path, router.Handler, router.Middleware)
+	case GET:
+		group.GET(router.Path, router.Handler, router.Middleware)
+	case PUT:
+		group.PUT(router.Path, router.Handler, router.Middleware)
+	case DELETE:
+		group.DELETE(router.Path, router.Handler, router.Middleware)
+	}
+}
+
+func GetParam(ctx *gin.Context, key string) string {
 	var value string
 	value = ctx.PostForm(key)
 	if value == "" {

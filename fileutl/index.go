@@ -1,10 +1,13 @@
 package fileutl
 
 import (
+	"crypto/md5"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 type Manager struct {
@@ -35,6 +38,9 @@ func (this Manager) WriteBase64(content string) {
 
 
 func (this *Manager) Create() error {
+	if !strings.HasSuffix(this.Path, "/") {
+		this.Path += "/"
+	}
 	file, err := os.Create(this.Path + this.Name)
 	if err != nil {
 		println("create file error", err)
@@ -78,4 +84,21 @@ func (this Manager) ReadAll(block func([]byte, error)) {
 			block(ioutil.ReadAll(file))
 		}
 	})
+}
+func (this Manager) DeleteFile() error {
+	return os.Remove(this.Path)
+}
+
+func (this Manager) GetMd5() string {
+	channel := make(chan string)
+	this.Open(func(e error, file *os.File) {
+		md5h := md5.New()
+		_, err := io.Copy(md5h, file)
+		if err != nil {
+			fmt.Println(err.Error())
+		} else {
+			channel <- string(md5h.Sum([]byte("")))
+		}
+	})
+	return <- channel
 }
