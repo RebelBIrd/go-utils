@@ -37,9 +37,11 @@ func StartServer(groups []BaseGroup, routers []BaseRouter, port int, init func(e
 		group.Func(engine.Group(group.Path, group.Middleware))
 	}
 	for _, router := range routers {
-		engine.GET(router.Path, router.Handler, router.Middleware)
+		engine.GET(router.Path, router.Middleware, router.Handler)
 	}
-	init(engine)
+	if init != nil {
+		init(engine)
+	}
 	if err := engine.Run(":" + strconv.Itoa(port)); err != nil {
 		logutl.Error(err.Error())
 	}
@@ -65,6 +67,9 @@ func GetParam(ctx *gin.Context, key string) string {
 		value = ctx.Query(key)
 	}
 	if value == "" {
+		value = ctx.Param("key")
+	}
+	if value == "" {
 		var values map[string]string
 		body, _ := ioutil.ReadAll(ctx.Request.Body)
 		_ = json.Unmarshal(body, &values)
@@ -78,6 +83,19 @@ func GetIntParam(ctx *gin.Context, key string) int {
 		return 0
 	} else {
 		v, err := strconv.Atoi(vStr)
+		if err != nil {
+			logutl.Error(err.Error())
+		}
+		return v
+	}
+}
+
+func GetInt64Param(ctx *gin.Context, key string) int64 {
+	vStr := GetParam(ctx, key)
+	if vStr == "" {
+		return 0
+	} else {
+		v, err := strconv.ParseInt(vStr, 10, 64)
 		if err != nil {
 			logutl.Error(err.Error())
 		}

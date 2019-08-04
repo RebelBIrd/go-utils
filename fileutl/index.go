@@ -3,6 +3,7 @@ package fileutl
 import (
 	"crypto/md5"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -36,7 +37,6 @@ func (this Manager) WriteBase64(content string) {
 	})
 }
 
-
 func (this *Manager) Create() error {
 	if !strings.HasSuffix(this.Path, "/") {
 		this.Path += "/"
@@ -50,7 +50,7 @@ func (this *Manager) Create() error {
 }
 
 func (this *Manager) Open(block func(error, *os.File)) {
-	file, err := os.OpenFile(this.Path + this.Name, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+	file, err := os.OpenFile(this.Path+this.Name, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		fmt.Println(err.Error())
 		block(err, nil)
@@ -90,15 +90,18 @@ func (this Manager) DeleteFile() error {
 }
 
 func (this Manager) GetMd5() string {
-	channel := make(chan string)
-	this.Open(func(e error, file *os.File) {
-		md5h := md5.New()
-		_, err := io.Copy(md5h, file)
-		if err != nil {
-			fmt.Println(err.Error())
-		} else {
-			channel <- string(md5h.Sum([]byte("")))
-		}
-	})
-	return <- channel
+	file, err := os.Open(this.Path)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ""
+	}
+	defer file.Close()
+	md5h := md5.New()
+	_, err = io.Copy(md5h, file)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ""
+	} else {
+		return hex.EncodeToString(md5h.Sum(nil))
+	}
 }

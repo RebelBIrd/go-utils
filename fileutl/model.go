@@ -13,7 +13,7 @@ import (
 type FileType int
 
 const (
-	_ FileType = iota
+	FT_UNDEFINED FileType = iota
 	FT_VIDEO
 	FT_IMAGE
 	FT_DOC

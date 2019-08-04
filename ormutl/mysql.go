@@ -47,7 +47,9 @@ func InitMysql(conf MysqlConf) {
 func (mEngine *MysqlConf) InitTables(initBlock func(interface{}), beans ...interface{}) {
 	for _, table := range beans {
 		if isExist, err := mEngine.IsTableExist(table); err != nil || !isExist {
-			_ = mEngine.CreateTables(table)
+			if err := mEngine.CreateTables(table); err != nil {
+				logutl.Error(err.Error())
+			}
 			if initBlock != nil {
 				initBlock(table)
 			}
