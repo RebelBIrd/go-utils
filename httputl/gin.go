@@ -37,7 +37,7 @@ func StartServer(groups []BaseGroup, routers []BaseRouter, port int, init func(e
 		group.Func(engine.Group(group.Path, group.Middleware))
 	}
 	for _, router := range routers {
-		engine.GET(router.Path, router.Middleware, router.Handler)
+		router.addEnginePath(engine)
 	}
 	if init != nil {
 		init(engine)
@@ -50,13 +50,58 @@ func StartServer(groups []BaseGroup, routers []BaseRouter, port int, init func(e
 func (router *BaseRouter) addPath(group *gin.RouterGroup) {
 	switch router.Type {
 	case POST:
-		group.POST(router.Path, router.Handler, router.Middleware)
+		if router.Middleware == nil {
+			group.POST(router.Path, router.Handler)
+		} else {
+			group.POST(router.Path, router.Middleware, router.Handler)
+		}
 	case GET:
-		group.GET(router.Path, router.Handler, router.Middleware)
+		if router.Middleware == nil {
+			group.GET(router.Path, router.Handler)
+		} else {
+			group.GET(router.Path, router.Middleware, router.Handler)
+		}
 	case PUT:
-		group.PUT(router.Path, router.Handler, router.Middleware)
+		if router.Middleware == nil {
+			group.PUT(router.Path, router.Handler)
+		} else {
+			group.PUT(router.Path, router.Middleware, router.Handler)
+		}
 	case DELETE:
-		group.DELETE(router.Path, router.Handler, router.Middleware)
+		if router.Middleware == nil {
+			group.DELETE(router.Path, router.Handler)
+		} else {
+			group.DELETE(router.Path, router.Middleware, router.Handler)
+		}
+	}
+}
+
+func (router *BaseRouter) addEnginePath(engine *gin.Engine) {
+	switch router.Type {
+	case POST:
+		if router.Middleware == nil {
+			engine.POST(router.Path, router.Handler)
+		} else {
+			engine.POST(router.Path, router.Middleware, router.Handler)
+		}
+	case GET:
+		if router.Middleware == nil {
+			engine.GET(router.Path, router.Handler)
+		} else {
+			engine.GET(router.Path, router.Middleware, router.Handler)
+		}
+	case PUT:
+		if router.Middleware == nil {
+			engine.PUT(router.Path, router.Handler)
+		} else {
+			engine.PUT(router.Path, router.Middleware, router.Handler)
+		}
+	case DELETE:
+		if router.Middleware == nil {
+			engine.DELETE(router.Path, router.Handler)
+		} else {
+			engine.DELETE(router.Path, router.Middleware, router.Handler)
+		}
 	}
 }
 
