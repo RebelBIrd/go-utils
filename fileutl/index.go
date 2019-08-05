@@ -85,8 +85,12 @@ func (this Manager) ReadAll(block func([]byte, error)) {
 		}
 	})
 }
-func (this Manager) DeleteFile() error {
+func (this *Manager) DeleteFile() error {
 	return os.Remove(this.Path)
+}
+
+func DeleteFile(path string) error {
+	return os.Remove(path)
 }
 
 func (this Manager) GetMd5() string {

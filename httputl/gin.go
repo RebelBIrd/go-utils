@@ -112,7 +112,7 @@ func GetParam(ctx *gin.Context, key string) string {
 		value = ctx.Query(key)
 	}
 	if value == "" {
-		value = ctx.Param("key")
+		value = ctx.Param(key)
 	}
 	if value == "" {
 		var values map[string]string
