@@ -106,7 +106,12 @@ func DownloadFile(url string, savePath *string, channel chan<- error, processCha
 		if !strings.HasSuffix(*savePath, "/") {
 			*savePath += "/"
 		}
-		*savePath += path.Base(url)
+		disp := strings.Split(res.Header.Get("content-disposition"), "filename=")
+		if len(disp) > 2 {
+			*savePath += disp[1]
+		} else {
+			*savePath += path.Base(url)
+		}
 		fSize, err = strconv.ParseInt(res.Header.Get("Content-Length"), 10, 32)
 		if err != nil {
 			fmt.Println(err)
