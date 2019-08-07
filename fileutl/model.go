@@ -29,7 +29,7 @@ type FileInfo struct {
 	Type     FileType
 	Category string
 	Path     string
-	Md5      string
+	MD5      string
 }
 
 func GinFileHandler(v *multipart.FileHeader, path, fileName string) (info *FileInfo) {
@@ -51,8 +51,8 @@ func GinFileHandler(v *multipart.FileHeader, path, fileName string) (info *FileI
 		PathExistOrCreate(path)
 		PathExistOrCreate(path + "/" + category)
 		if PathExist(info.Path) {
-			info.Name = rename + strutl.GetRandomString(4)
-			info.Path = path + "/" + category + "/" + info.Name + fileSuffix
+			saveName := rename + strutl.GetRandomString(4)
+			info.Path = path + "/" + category + "/" + saveName + fileSuffix
 		}
 		file, _ := v.Open()
 		defer file.Close()
@@ -62,6 +62,7 @@ func GinFileHandler(v *multipart.FileHeader, path, fileName string) (info *FileI
 			fmt.Println(err.Error())
 			return nil
 		}
+		info.MD5 = Manager{Name: fileName, Path: info.Path}.GetMd5()
 		return
 	}
 }
@@ -103,9 +104,12 @@ func DecodeFileName(filePath string) (fileName, fileType string) {
 
 func GetFileType(fileName string) (FileType, string) {
 	_, fileType := DecodeFileName(fileName)
+	if fileType == "" {
+		return FT_OTHRER, "other"
+	}
 	fileType = strings.ToLower(fileType)[1:]
 	switch fileType {
-	case "avi", "mov", "rmvb", "fmv", "m4", "3gp", "mkv", "f4v":
+	case "avi", "mov", "rmvb", "fmv", "mp4", "3gp", "mkv", "f4v":
 		return FT_VIDEO, "video"
 	case "bmp", "jpg", "png", "ico", "tif", "gif", "pcx", "tga", "exif", "fpx", "svg", "psd", "cdr", "pcd", "dxf", "ufo", "eps", "ai", "raw", "WMF", "webp", "jpeg":
 		return FT_IMAGE, "image"
