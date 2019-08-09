@@ -36,6 +36,7 @@ func GinFileHandler(v *multipart.FileHeader, path, fileName string) (info *FileI
 	if fileName == "" {
 		fileName = v.Filename
 	}
+	fileName = strutl.UrlDecode(fileName)
 	if fileName == "" {
 		return
 	} else {
@@ -125,3 +126,5 @@ func GetFileType(fileName string) (FileType, string) {
 		return FT_OTHRER, "other"
 	}
 }
+
+
