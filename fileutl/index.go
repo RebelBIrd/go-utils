@@ -4,10 +4,13 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
+	"runtime"
 	"strings"
 )
 
@@ -107,5 +110,35 @@ func (this Manager) GetMd5() string {
 		return ""
 	} else {
 		return hex.EncodeToString(md5h.Sum(nil))
+	}
+}
+
+func OpenFile(filePath string) error {
+	switch runtime.GOOS {
+	case "darwin":
+		return exec.Command("open", filePath).Start()
+	case "windows":
+		cmd := exec.Command("cmd", "/k", "start", filePath)
+		//cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+		return cmd.Start()
+	case "linux":
+		return exec.Command("xdg-open", filePath).Start()
+	default:
+		return errors.New("OS is not defined!")
+	}
+}
+
+func OpenPath(path string) error {
+	switch runtime.GOOS {
+	case "darwin":
+		return exec.Command("open", path).Start()
+	case "windows":
+		cmd := exec.Command("cmd", "/k", "explorer", path)
+		// cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+		return cmd.Start()
+	case "linux":
+		return exec.Command("nautilus", path).Start()
+	default:
+		return nil
 	}
 }
