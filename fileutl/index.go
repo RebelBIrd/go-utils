@@ -128,17 +128,32 @@ func OpenFile(filePath string) error {
 	}
 }
 
-func OpenPath(path string) error {
-	switch runtime.GOOS {
-	case "darwin":
-		return exec.Command("open", path).Start()
-	case "windows":
-		cmd := exec.Command("cmd", "/k", "explorer", path)
-		// cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-		return cmd.Start()
-	case "linux":
-		return exec.Command("nautilus", path).Start()
-	default:
-		return nil
+func OpenPath(path string, fileName string) error {
+	if fileName == "" {
+		switch runtime.GOOS {
+		case "darwin":
+			return exec.Command("open", path).Start()
+		case "windows":
+			cmd := exec.Command("cmd", "/k", "explorer", path)
+			// cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+			return cmd.Start()
+		case "linux":
+			return exec.Command("nautilus", path).Start()
+		default:
+			return nil
+		}
+	} else {
+		switch runtime.GOOS {
+		case "darwin":
+			return exec.Command("open", "-R", path+fileName).Start()
+		case "windows":
+			cmd := exec.Command("cmd", "/k", "explorer.exe", "/select,"+path+fileName)
+			// cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+			return cmd.Start()
+		case "linux":
+			return exec.Command("nautilus", path+fileName).Start()
+		default:
+			return nil
+		}
 	}
 }
