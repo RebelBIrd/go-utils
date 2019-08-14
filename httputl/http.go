@@ -3,7 +3,6 @@ package httputl
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/qinyuanmao/go-utils/logutl"
 	"io"
 	"io/ioutil"
 	"net/http"
