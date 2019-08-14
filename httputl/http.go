@@ -3,6 +3,7 @@ package httputl
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/qinyuanmao/go-utils/logutl"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -107,7 +108,7 @@ func DownloadFile(url string, savePath *string, channel chan<- error, processCha
 			*savePath += "/"
 		}
 		disp := strings.Split(res.Header.Get("content-disposition"), "filename=")
-		if len(disp) > 2 {
+		if len(disp) >= 2 {
 			*savePath += disp[1]
 		} else {
 			*savePath += path.Base(url)
