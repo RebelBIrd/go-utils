@@ -157,3 +157,18 @@ func OpenPath(path string, fileName string) error {
 		}
 	}
 }
+
+func OpenFilePath(filePath string) error {
+	switch runtime.GOOS {
+	case "darwin":
+		return exec.Command("open", "-R", filePath).Start()
+	case "windows":
+		cmd := exec.Command("cmd", "/k", "explorer.exe", "/select,"+filePath)
+		// cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+		return cmd.Start()
+	case "linux":
+		return exec.Command("nautilus", filePath).Start()
+	default:
+		return nil
+	}
+}
