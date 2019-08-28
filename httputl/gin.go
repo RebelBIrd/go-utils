@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type BaseGroup struct {
@@ -120,7 +121,7 @@ func GetParam(ctx *gin.Context, key string) string {
 		_ = json.Unmarshal(body, &values)
 		value = values[key]
 	}
-	return value
+	return strings.TrimSpace(value)
 }
 func GetIntParam(ctx *gin.Context, key string) int {
 	vStr := GetParam(ctx, key)

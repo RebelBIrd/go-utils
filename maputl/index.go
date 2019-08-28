@@ -112,3 +112,43 @@ func GetMapValue(m map[string]interface{}, key string, value interface{}) error 
 		return errors.New("Param type error.")
 	}
 }
+
+func GetKeys(m map[string]interface{}) []string {
+	j := 0
+	keys := make([]string, len(m))
+	for k := range m {
+		keys[j] = k
+		j++
+	}
+	return keys
+}
+
+func GetStringKeys(m map[string]string) []string {
+	j := 0
+	keys := make([]string, len(m))
+	for k := range m {
+		keys[j] = k
+		j++
+	}
+	return keys
+}
+
+func GetIntKeys(m map[string]int) []string {
+	j := 0
+	keys := make([]string, len(m))
+	for k := range m {
+		keys[j] = k
+		j++
+	}
+	return keys
+}
+
+func GetValues(m map[string]interface{}) []interface{} {
+	j := 0
+	keys := make([]interface{}, len(m))
+	for _, v := range m {
+		keys[j] = v
+		j++
+	}
+	return keys
+}
