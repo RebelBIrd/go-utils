@@ -63,7 +63,7 @@ func (mEngine *MysqlConf) InitTables(initBlock func(interface{}), beans ...inter
 func  (mEngine *MysqlConf)  ResetToken(eventName, sqlString string, hours int) (err error) {
 	_, err = mEngine.Exec(`DROP EVENT IF EXISTS ` + eventName +`;
 		CREATE EVENT ` + eventName +`
-		on schedule EVERY 1 SECOND STARTS date_add(now(), interval ` + strconv.Itoa(hours) + ` hour)
+		on schedule at date_add(now(), interval ` + strconv.Itoa(hours) + ` hour)
 		do ` + sqlString +`;`)
 	if err != nil {
 		logutl.Error(err.Error())
