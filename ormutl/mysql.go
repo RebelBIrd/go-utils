@@ -6,7 +6,7 @@ import (
 	"github.com/go-xorm/xorm"
 	"github.com/qinyuanmao/go-utils/logutl"
 	"github.com/qinyuanmao/go-utils/strutl"
-	"strconv"
+	"strings"
 )
 
 //mysql驱动器，带yaml配置项
@@ -61,11 +61,11 @@ func (mEngine *MysqlConf) InitTables(initBlock func(interface{}), beans ...inter
 }
 
 func  (mEngine *MysqlConf)  ResetToken(eventName, sqlString string, hours int) (err error) {
-	_, err = mEngine.Exec(`DROP EVENT IF EXISTS ` + eventName +`;
-		CREATE EVENT ` + eventName +`
-		on schedule at date_add(now(), interval ` + strconv.Itoa(hours) + ` hour)
-		do ` + sqlString +`;`)
-	if err != nil {
+	eventName = strings.ReplaceAll(eventName, "-", "")
+	if _, err = mEngine.Exec(`DROP EVENT IF EXISTS ` + eventName); err != nil {
+		logutl.Error(err.Error())
+	}
+	if _, err = mEngine.Exec(`CREATE EVENT ? on schedule at date_add(now(), interval ? hour) do ? `, eventName, hours, sqlString); err != nil {
 		logutl.Error(err.Error())
 	}
 	return

@@ -5,7 +5,7 @@ import "github.com/qinyuanmao/go-utils/pageutl"
 type Response struct {
 	Code   ResponseCode `json:"code"`
 	Msg    ResponseMsg  `json:"msg"`
-	Result interface{}  `json:"result"`
+	Result interface{}  `json:"result,omitempty"`
 }
 
 type RespArray struct {

@@ -6,7 +6,7 @@ import (
 )
 
 func Exist(id interface{}, model interface{}) bool {
-	exist, err := ormutl.GetEngine().Table(model).ID(id).Exist(model)
+	exist, err := ormutl.GetEngine().Table(model).ID(id).Exist()
 	if err != nil {
 		logutl.Error(err.Error())
 	}
