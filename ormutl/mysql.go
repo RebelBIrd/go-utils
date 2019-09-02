@@ -6,6 +6,7 @@ import (
 	"github.com/go-xorm/xorm"
 	"github.com/qinyuanmao/go-utils/logutl"
 	"github.com/qinyuanmao/go-utils/strutl"
+	"strconv"
 	"strings"
 )
 
@@ -48,24 +49,29 @@ func InitMysql(conf MysqlConf) {
 func (mEngine *MysqlConf) InitTables(initBlock func(interface{}), beans ...interface{}) {
 	for _, table := range beans {
 		if isExist, err := mEngine.IsTableExist(table); err != nil || !isExist {
-			if err := mEngine.CreateTables(table); err != nil {
-				logutl.Error(err.Error())
+			if err != nil {
+				logutl.Error(err)
+			}
+			if err = mEngine.Sync2(table); err != nil {
+				logutl.Error(err)
 			}
 			if initBlock != nil {
 				initBlock(table)
 			}
 		} else {
-			_ = mEngine.Sync(table)
+			if err = mEngine.Sync2(table); err != nil {
+				logutl.Error(err)
+			}
 		}
 	}
 }
 
-func  (mEngine *MysqlConf)  ResetToken(eventName, sqlString string, hours int) (err error) {
+func (mEngine *MysqlConf) ResetToken(eventName, sqlString string, hours int) (err error) {
 	eventName = strings.ReplaceAll(eventName, "-", "")
 	if _, err = mEngine.Exec(`DROP EVENT IF EXISTS ` + eventName); err != nil {
 		logutl.Error(err.Error())
 	}
-	if _, err = mEngine.Exec(`CREATE EVENT ? on schedule at date_add(now(), interval ? hour) do ? `, eventName, hours, sqlString); err != nil {
+	if _, err = mEngine.Exec(`CREATE EVENT ` + eventName + ` on schedule at date_add(now(), interval ` + strconv.Itoa(hours) + ` hour) do ` + sqlString); err != nil {
 		logutl.Error(err.Error())
 	}
 	return

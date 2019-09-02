@@ -26,6 +26,9 @@ type BaseRouter struct {
 
 func StartServer(groups []BaseGroup, routers []BaseRouter, port int, init func(engine *gin.Engine)) {
 	engine := gin.Default()
+	if init != nil {
+		init(engine)
+	}
 	engine.NoRoute(func(context *gin.Context) {
 		context.JSON(http.StatusOK, Resp404Failed())
 	})
@@ -39,9 +42,6 @@ func StartServer(groups []BaseGroup, routers []BaseRouter, port int, init func(e
 	}
 	for _, router := range routers {
 		router.addEnginePath(engine)
-	}
-	if init != nil {
-		init(engine)
 	}
 	if err := engine.Run(":" + strconv.Itoa(port)); err != nil {
 		logutl.Error(err.Error())
