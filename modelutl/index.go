@@ -48,8 +48,7 @@ func SaveArray(m interface{}) (err error) {
 
 func Update(id interface{}, model interface{}) (err error) {
 	if Exist(id, model) {
-		_, err = ormutl.GetEngine().UseBool(GetBoolField(model)...).ID(id).Update(model)
-		if err != nil {
+		if _, err = ormutl.GetEngine().NoAutoCondition().UseBool(GetBoolField(model)...).ID(id).Update(model); err != nil {
 			logutl.Error(err.Error())
 			return err
 		}
@@ -59,7 +58,7 @@ func Update(id interface{}, model interface{}) (err error) {
 			return err
 		}
 	}
-	if _, err = ormutl.GetEngine().ID(id).NoAutoCondition().Get(model); err != nil {
+	if _, err = ormutl.GetEngine().NoAutoCondition().ID(id).Get(model); err != nil {
 		logutl.Error(err.Error())
 		return err
 	}

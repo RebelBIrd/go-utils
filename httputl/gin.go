@@ -26,6 +26,7 @@ type BaseRouter struct {
 
 func StartServer(groups []BaseGroup, routers []BaseRouter, port int, init func(engine *gin.Engine)) {
 	engine := gin.Default()
+	engine.Use(Cors())
 	if init != nil {
 		init(engine)
 	}
@@ -146,5 +147,24 @@ func GetInt64Param(ctx *gin.Context, key string) int64 {
 			logutl.Error(err.Error())
 		}
 		return v
+	}
+}
+
+func Cors() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		method := c.Request.Method
+
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Headers", "Content-Type,AccessToken,X-CSRF-Token, Authorization, Token, sign, timestamp")
+		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+		c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type")
+		c.Header("Access-Control-Allow-Credentials", "true")
+
+		//放行所有OPTIONS方法
+		if method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusNoContent)
+		}
+		// 处理请求
+		c.Next()
 	}
 }
