@@ -1,6 +1,7 @@
 package httputl
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/qinyuanmao/go-utils/logutl"
@@ -119,15 +120,23 @@ func GetParam(ctx *gin.Context, key string) string {
 	if value == "" {
 		var values map[string]string
 		body, _ := ioutil.ReadAll(ctx.Request.Body)
+		buf := bytes.NewBuffer(body)
+		ctx.Request.Body = ioutil.NopCloser(buf)
 		_ = json.Unmarshal(body, &values)
 		value = values[key]
 	}
 	return strings.TrimSpace(value)
 }
+
 func GetIntParam(ctx *gin.Context, key string) int {
 	vStr := GetParam(ctx, key)
 	if vStr == "" {
-		return 0
+		var values map[string]int
+		body, _ := ioutil.ReadAll(ctx.Request.Body)
+		buf := bytes.NewBuffer(body)
+		ctx.Request.Body = ioutil.NopCloser(buf)
+		_ = json.Unmarshal(body, &values)
+		return values[key]
 	} else {
 		v, err := strconv.Atoi(vStr)
 		if err != nil {
@@ -140,9 +149,32 @@ func GetIntParam(ctx *gin.Context, key string) int {
 func GetInt64Param(ctx *gin.Context, key string) int64 {
 	vStr := GetParam(ctx, key)
 	if vStr == "" {
-		return 0
+		var values map[string]int64
+		body, _ := ioutil.ReadAll(ctx.Request.Body)
+		buf := bytes.NewBuffer(body)
+		ctx.Request.Body = ioutil.NopCloser(buf)
+		_ = json.Unmarshal(body, &values)
+		return values[key]
 	} else {
 		v, err := strconv.ParseInt(vStr, 10, 64)
+		if err != nil {
+			logutl.Error(err.Error())
+		}
+		return v
+	}
+}
+
+func GetFloat64Param(ctx *gin.Context, key string) float64 {
+	vStr := GetParam(ctx, key)
+	if vStr == "" {
+		var values map[string]float64
+		body, _ := ioutil.ReadAll(ctx.Request.Body)
+		buf := bytes.NewBuffer(body)
+		ctx.Request.Body = ioutil.NopCloser(buf)
+		_ = json.Unmarshal(body, &values)
+		return values[key]
+	} else {
+		v, err := strconv.ParseFloat(vStr, 64)
 		if err != nil {
 			logutl.Error(err.Error())
 		}

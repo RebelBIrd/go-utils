@@ -13,7 +13,7 @@ type RespArray struct {
 	PageCount int         `json:"pageCount"`
 	PageSize  int         `json:"pageSize"`
 	Total     int         `json:"total"`
-	Data      interface{} `json:"data"`
+	Data      interface{} `json:"data,omitempty"`
 }
 
 func RespArraySuccess(index, size, total int, data interface{}) Response {
