@@ -76,6 +76,12 @@ func (router *BaseRouter) addPath(group *gin.RouterGroup) {
 		} else {
 			group.DELETE(router.Path, router.Middleware, router.Handler)
 		}
+	default:
+		if router.Middleware == nil {
+			group.Any(router.Path, router.Handler)
+		} else {
+			group.Any(router.Path, router.Middleware, router.Handler)
+		}
 	}
 }
 
@@ -104,6 +110,12 @@ func (router *BaseRouter) addEnginePath(engine *gin.Engine) {
 			engine.DELETE(router.Path, router.Handler)
 		} else {
 			engine.DELETE(router.Path, router.Middleware, router.Handler)
+		}
+	default:
+		if router.Middleware == nil {
+			engine.Any(router.Path, router.Handler)
+		} else {
+			engine.Any(router.Path, router.Middleware, router.Handler)
 		}
 	}
 }
@@ -187,7 +199,7 @@ func Cors() gin.HandlerFunc {
 		method := c.Request.Method
 
 		c.Header("Access-Control-Allow-Origin", "*")
-		c.Header("Access-Control-Allow-Headers", "Content-Type,AccessToken,X-CSRF-Token, Authorization, Token, sign, timestamp")
+		c.Header("Access-Control-Allow-Headers", "Content-Type,AccessToken,X-CSRF-Token, openId, Authorization, Token, sign, timestamp")
 		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 		c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type")
 		c.Header("Access-Control-Allow-Credentials", "true")

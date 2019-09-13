@@ -7,7 +7,7 @@ const (
 	POST
 	PUT
 	DELETE
-
+	ANY
 )
 
 type HttpParam struct {
