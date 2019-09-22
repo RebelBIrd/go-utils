@@ -10,6 +10,7 @@ import (
 type Time time.Time
 
 const timeFormat = "2006/01/02 15:04:05"
+const timeFormat2 = "2006-01-02 15:04:05"
 
 func GetNowTime() string {
 	return time.Now().Format(timeFormat)
@@ -17,6 +18,10 @@ func GetNowTime() string {
 
 func GetTimeString(t time.Time) string {
 	return t.Format(timeFormat)
+}
+
+func GetTimeString2(t time.Time) string {
+	return t.Format(timeFormat2)
 }
 
 func GetDate() string {
@@ -52,4 +57,8 @@ func Now() Time {
 
 func (t Time) String() string {
 	return time.Time(t).Format(timeFormat)
+}
+
+func (t Time) Unix() int64 {
+	return time.Time(t).Unix()
 }

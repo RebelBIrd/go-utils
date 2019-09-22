@@ -6,17 +6,19 @@ import (
 	"github.com/go-xorm/xorm"
 	"github.com/qinyuanmao/go-utils/logutl"
 	"github.com/qinyuanmao/go-utils/strutl"
+	"github.com/qinyuanmao/go-utils/timeutl"
 	"strconv"
 	"strings"
+	"time"
 )
 
 //mysql驱动器，带yaml配置项
 type MysqlConf struct {
-	Url      string `yaml:"url"`      // 数据库地址
-	Username string `yaml:"username"` // 数据库用户名
-	Password string `yaml:"password"` // 数据库密码
-	Database string `yaml:"database"` // 数据库名
-	*xorm.Engine                      // 数据库引擎
+	Url          string `yaml:"url"`      // 数据库地址
+	Username     string `yaml:"username"` // 数据库用户名
+	Password     string `yaml:"password"` // 数据库密码
+	Database     string `yaml:"database"` // 数据库名
+	*xorm.Engine                          // 数据库引擎
 }
 
 var mEngine *MysqlConf
@@ -72,6 +74,17 @@ func (mEngine *MysqlConf) ResetToken(eventName, sqlString string, hours int) (er
 		logutl.Error(err.Error())
 	}
 	if _, err = mEngine.Exec(`CREATE EVENT ` + eventName + ` on schedule at date_add(now(), interval ` + strconv.Itoa(hours) + ` hour) do ` + sqlString); err != nil {
+		logutl.Error(err.Error())
+	}
+	return
+}
+
+func (mEngine *MysqlConf) TimingEvent(eventName, sqlString string, doAt time.Time) (err error) {
+	eventName = strings.ReplaceAll(eventName, "-", "")
+	if _, err = mEngine.Exec(`DROP EVENT IF EXISTS ` + eventName); err != nil {
+		logutl.Error(err.Error())
+	}
+	if _, err = mEngine.Exec(`CREATE EVENT ` + eventName + ` on schedule at TIMESTAMP '` + timeutl.GetTimeString2(doAt) + `' ON COMPLETION PRESERVE ENABLE do ` + sqlString); err != nil {
 		logutl.Error(err.Error())
 	}
 	return

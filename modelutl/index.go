@@ -17,11 +17,11 @@ func Exist(id interface{}, model interface{}) bool {
 }
 
 func Save(id interface{}, model interface{}) (err error) {
-	if _, err = ormutl.GetEngine().Insert(model); err != nil {
+	if _, err = ormutl.GetEngine().UseBool(GetBoolField(model)...).Insert(model); err != nil {
 		logutl.Error(err)
 		return err
 	}
-	if _, err = ormutl.GetEngine().ID(id).NoAutoCondition().Get(model); err != nil {
+	if _, err = ormutl.GetEngine().ID(id).UseBool(GetBoolField(model)...).NoAutoCondition().Get(model); err != nil {
 		logutl.Error(err)
 		return err
 	}

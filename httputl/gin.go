@@ -193,6 +193,23 @@ func GetFloat64Param(ctx *gin.Context, key string) float64 {
 		return v
 	}
 }
+func GetBoolParam(ctx *gin.Context, key string) bool {
+	vStr := GetParam(ctx, key)
+	if vStr == "" {
+		var values map[string]bool
+		body, _ := ioutil.ReadAll(ctx.Request.Body)
+		buf := bytes.NewBuffer(body)
+		ctx.Request.Body = ioutil.NopCloser(buf)
+		_ = json.Unmarshal(body, &values)
+		return values[key]
+	} else {
+		v, err := strconv.ParseBool(vStr)
+		if err != nil {
+			logutl.Error(err.Error())
+		}
+		return v
+	}
+}
 
 func Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
