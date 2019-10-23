@@ -3,7 +3,9 @@ package strutl
 import (
 	"bytes"
 	"crypto/rand"
+	"github.com/snluu/uuid"
 	"strconv"
+	"strings"
 )
 
 var keywords = []byte("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -14,6 +16,10 @@ func ConnString(strs ...string) string {
 		buffer.WriteString(str)
 	}
 	return buffer.String()
+}
+
+func GetUuid() string {
+	return strings.ReplaceAll(uuid.Rand().Hex(), "-", "")
 }
 
 func GetRandomString(size int) string {

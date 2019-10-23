@@ -47,6 +47,18 @@ func IsStringInArray(val string, array []string) bool {
 	return isIn
 }
 
+func RemoveStringElem(key string, arr []string) []string {
+	var strs []string
+	if key != "" {
+		for _, v := range arr {
+			if key != v {
+				strs = append(strs, v)
+			}
+		}
+	}
+	return strs
+}
+
 func InterfaceSlice(slice interface{}) []interface{} {
 	s := reflect.ValueOf(slice)
 	if s.Kind() != reflect.Slice {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/qinyuanmao/go-utils/logutl"
 	"io/ioutil"
 	"net/http"
@@ -158,6 +159,45 @@ func GetIntParam(ctx *gin.Context, key string) int {
 	}
 }
 
+func GetIntArrayParam(ctx *gin.Context, key string) []int {
+	vStr := GetParam(ctx, key)
+	if vStr == "" {
+		var values map[string][]int
+		body, _ := ioutil.ReadAll(ctx.Request.Body)
+		buf := bytes.NewBuffer(body)
+		ctx.Request.Body = ioutil.NopCloser(buf)
+		_ = json.Unmarshal(body, &values)
+		v := values[key]
+		if v == nil {
+			var values map[string]string
+			body, _ := ioutil.ReadAll(ctx.Request.Body)
+			buf := bytes.NewBuffer(body)
+			ctx.Request.Body = ioutil.NopCloser(buf)
+			_ = json.Unmarshal(body, &values)
+			v2 := values[key]
+			if v2 == "" {
+				return nil
+			} else {
+				var r []int
+				err := json.Unmarshal([]byte(v2), &r)
+				if err != nil {
+					logutl.Error(err.Error())
+				}
+				return r
+			}
+		} else {
+			return v
+		}
+	} else {
+		var r []int
+		err := json.Unmarshal([]byte(vStr), &r)
+		if err != nil {
+			logutl.Error(err.Error())
+		}
+		return r
+	}
+}
+
 func GetInt64Param(ctx *gin.Context, key string) int64 {
 	vStr := GetParam(ctx, key)
 	if vStr == "" {
@@ -209,6 +249,12 @@ func GetBoolParam(ctx *gin.Context, key string) bool {
 		}
 		return v
 	}
+}
+func Bind(ctx *gin.Context, val interface{}) (err error) {
+	if err = ctx.ShouldBindWith(val, binding.Default(ctx.Request.Method, ctx.Request.Header.Get("Content-Type"))); err != nil {
+		logutl.Error(err)
+	}
+	return
 }
 
 func Cors() gin.HandlerFunc {

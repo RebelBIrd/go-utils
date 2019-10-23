@@ -6,6 +6,7 @@ import (
 	"github.com/qinyuanmao/go-utils/sliceutl"
 	"log"
 	"reflect"
+	"strings"
 )
 
 func Exist(id interface{}, model interface{}) bool {
@@ -35,11 +36,35 @@ func SaveArray(m interface{}) (err error) {
 			_, err = ormutl.GetEngine().Insert(models[i:])
 			if err != nil {
 				logutl.Error(err)
+				var session = ormutl.GetEngine().NewSession()
+				defer session.Close()
+				_ = session.Begin()
+				for j := i; j < len(models); j++ {
+					if _, err := ormutl.GetEngine().Insert(models[j]); err != nil {
+						logutl.Error(err)
+						_ = session.Rollback()
+					}
+				}
+				if err = session.Commit(); err != nil {
+					logutl.Error(err)
+				}
 			}
 		} else {
 			_, err = ormutl.GetEngine().Insert(models[i : i+99])
 			if err != nil {
 				logutl.Error(err)
+				var session = ormutl.GetEngine().NewSession()
+				defer session.Close()
+				_ = session.Begin()
+				for j := i; j < i+99; j++ {
+					if _, err := session.Insert(models[j]); err != nil {
+						logutl.Error(err)
+						_ = session.Rollback()
+					}
+				}
+				if err = session.Commit(); err != nil {
+					logutl.Error(err)
+				}
 			}
 		}
 	}
@@ -75,6 +100,14 @@ func Delete(id interface{}, model interface{}) (err error) {
 	} else {
 		return nil
 	}
+}
+
+func Remove(tableName string, where []string, values []interface{}) (err error) {
+	w := strings.Join(where, " And ")
+	if _, err := ormutl.GetEngine().Exec("Delete From `"+ tableName +"` Where " + w, values); err != nil {
+		logutl.Error(err)
+	}
+	return
 }
 
 func GetById(id interface{}, model interface{}) (err error) {

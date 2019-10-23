@@ -3,6 +3,7 @@ package httputl
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/qinyuanmao/go-utils/logutl"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -11,7 +12,6 @@ import (
 	"path"
 	"strconv"
 	"strings"
-	"time"
 )
 
 func DoHttp(methodType MethodType, url string, header map[string]string, body map[string]interface{}, response *HttpResponse) {
@@ -92,15 +92,15 @@ func doNetWork(param HttpParam) {
 	}
 }
 
-func DownloadFile(url string, savePath *string, channel chan<- error, processChan chan<- float64)  {
+func DownloadFile(url string, savePath *string, channel chan<- error, processChan chan<- float64) {
 	var (
-		fSize int64
-		buf = make([]byte, 32 * 1024)
+		fSize   int64
+		buf     = make([]byte, 32*1024)
 		written int64
 	)
 	res, err := http.Get(url)
 	if err != nil {
-		fmt.Println(err.Error())
+		logutl.Error(err)
 		channel <- err
 	} else {
 		if !strings.HasSuffix(*savePath, "/") {
@@ -120,7 +120,7 @@ func DownloadFile(url string, savePath *string, channel chan<- error, processCha
 		}
 		f, err := os.Create(*savePath)
 		if err != nil {
-			fmt.Println(err.Error())
+			logutl.Error(err)
 			channel <- err
 			return
 		}
@@ -153,22 +153,32 @@ func DownloadFile(url string, savePath *string, channel chan<- error, processCha
 				}
 			}
 			if processChan != nil {
-				processChan <- float64(written * 100) / float64(fSize)
+				processChan <- float64(written*100) / float64(fSize)
 			}
 		}
 	}
 }
 
+func DownloadFileBytes(url string) (pix []byte, err error) {
+	var resp *http.Response
+	if resp, err = http.Get(url); err != nil {
+		logutl.Error(err)
+		return
+	}
+	defer resp.Body.Close()
+	if pix, err = ioutil.ReadAll(resp.Body); err != nil {
+		logutl.Error(err)
+	}
+	return
+
+}
+
 func NetWorkStatus(url string) bool {
 	cmd := exec.Command("ping", url, "-c", "1", "-W", "5")
-	fmt.Println("NetWorkStatus Start:", time.Now().Unix())
 	err := cmd.Run()
-	fmt.Println("NetWorkStatus End  :", time.Now().Unix())
 	if err != nil {
-		fmt.Println(err.Error())
+		logutl.Error(err)
 		return false
-	} else {
-		fmt.Println("Net Status , OK")
 	}
 	return true
 }

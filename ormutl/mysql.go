@@ -14,11 +14,11 @@ import (
 
 //mysql驱动器，带yaml配置项
 type MysqlConf struct {
-	Url          string `yaml:"url"`      // 数据库地址
-	Username     string `yaml:"username"` // 数据库用户名
-	Password     string `yaml:"password"` // 数据库密码
-	Database     string `yaml:"database"` // 数据库名
-	*xorm.Engine                          // 数据库引擎
+	Url       string `yaml:"url"`      // 数据库地址
+	Username  string `yaml:"username"` // 数据库用户名
+	Password  string `yaml:"password"` // 数据库密码
+	Database  string `yaml:"database"` // 数据库名
+	OrmEngine                          // 数据库引擎
 }
 
 var mEngine *MysqlConf
@@ -48,22 +48,38 @@ func InitMysql(conf MysqlConf) {
 	}
 }
 
-func (mEngine *MysqlConf) InitTables(initBlock func(interface{}), beans ...interface{}) {
+func (engine *MysqlConf) InitTables(initBlock func(interface{}), beans ...interface{}) {
 	for _, table := range beans {
-		if isExist, err := mEngine.IsTableExist(table); err != nil || !isExist {
+		if isExist, err := engine.IsTableExist(table); err != nil || !isExist {
 			if err != nil {
 				logutl.Error(err)
 			}
-			if err = mEngine.Sync2(table); err != nil {
+			if err = engine.Sync2(table); err != nil {
 				logutl.Error(err)
 			}
 			if initBlock != nil {
 				initBlock(table)
 			}
 		} else {
-			if err = mEngine.Sync2(table); err != nil {
+			if err = engine.Sync2(table); err != nil {
 				logutl.Error(err)
 			}
+		}
+	}
+}
+
+func (conf *MysqlConf) InitMysql() {
+	if conf.Engine == nil {
+		dbConf := strutl.ConnString(conf.Username, ":", conf.Password, "@tcp(", conf.Url, ")/", conf.Database, "?charset=utf8&parseTime=True&Local")
+		var err error
+		conf.Engine, err = xorm.NewEngine("mysql", dbConf)
+		if err != nil {
+			conf.Engine = nil
+			logutl.Error(err.Error())
+		} else {
+			conf.Engine.SetMapper(core.SameMapper{})
+			conf.Engine.SetMaxOpenConns(25)
+			conf.Engine.SetMaxIdleConns(5)
 		}
 	}
 }
