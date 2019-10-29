@@ -2,7 +2,9 @@ package strutl
 
 import (
 	"bytes"
+	"crypto/md5"
 	"crypto/rand"
+	"encoding/hex"
 	"github.com/snluu/uuid"
 	"strconv"
 	"strings"
@@ -88,4 +90,10 @@ func UrlDecode(s string) string {
 	} else {
 		return s
 	}
+}
+
+func UpperMD5(text string) string {
+	ctx := md5.New()
+	ctx.Write([]byte(text))
+	return strings.ToUpper(hex.EncodeToString(ctx.Sum(nil)))
 }

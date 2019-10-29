@@ -44,9 +44,12 @@ func (engine *OrmEngine) SaveArray(m interface{}) (err error) {
 				defer session.Close()
 				_ = session.Begin()
 				for j := i; j < len(models); j++ {
-					if _, err := engine.Insert(models[j]); err != nil {
+					if _, err := session.Insert(models[j]); err != nil {
 						logutl.Error(err)
-						_ = session.Rollback()
+						if _, err := session.Update(models[j]); err != nil {
+							logutl.Error(err)
+							_ = session.Rollback()
+						}
 					}
 				}
 				if err = session.Commit(); err != nil {
@@ -63,7 +66,10 @@ func (engine *OrmEngine) SaveArray(m interface{}) (err error) {
 				for j := i; j < i+99; j++ {
 					if _, err := session.Insert(models[j]); err != nil {
 						logutl.Error(err)
-						_ = session.Rollback()
+						if _, err := session.Update(models[j]); err != nil {
+							logutl.Error(err)
+							_ = session.Rollback()
+						}
 					}
 				}
 				if err = session.Commit(); err != nil {
@@ -71,6 +77,69 @@ func (engine *OrmEngine) SaveArray(m interface{}) (err error) {
 				}
 			}
 		}
+	}
+	return
+}
+
+func (engine *OrmEngine) UpdateArray(m interface{}) (err error) {
+	models := sliceutl.InterfaceSlice(m)
+	for i := 0; i < len(models); i = i + 99 {
+		if i+99 >= len(models) {
+			_, err = engine.Engine.Update(models[i:])
+			if err != nil {
+				logutl.Error(err)
+				var session = engine.NewSession()
+				defer session.Close()
+				_ = session.Begin()
+				for j := i; j < len(models); j++ {
+					if count, err := session.Update(models[j]); err != nil {
+						logutl.Error(err)
+						_ = session.Rollback()
+					} else if count == 0 {
+						_, _ = session.Insert(models[j])
+					}
+				}
+				if err = session.Commit(); err != nil {
+					logutl.Error(err)
+				}
+			}
+		} else {
+			_, err = engine.Insert(models[i : i+99])
+			if err != nil {
+				logutl.Error(err)
+				var session = engine.NewSession()
+				defer session.Close()
+				_ = session.Begin()
+				for j := i; j < i+99; j++ {
+					if count, err := session.Update(models[j]); err != nil {
+						logutl.Error(err)
+						_ = session.Rollback()
+					} else if count == 0 {
+						_, _ = session.Insert(models[j])
+					}
+				}
+				if err = session.Commit(); err != nil {
+					logutl.Error(err)
+				}
+			}
+		}
+	}
+	return
+}
+
+func (engine *OrmEngine) DeleteArray(m interface{}) (err error) {
+	models := sliceutl.InterfaceSlice(m)
+	var session = engine.NewSession()
+	defer session.Close()
+	_ = session.Begin()
+	for _, m := range models {
+		if _, err := session.Delete(m); err != nil {
+			logutl.Error(err)
+			_ = session.Rollback()
+		}
+	}
+	if err = session.Commit(); err != nil {
+		logutl.Error(err)
 	}
 	return
 }

@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/qinyuanmao/go-utils/logutl"
 	"io"
 	"io/ioutil"
 	"os"
@@ -171,4 +172,28 @@ func OpenFilePath(filePath string) error {
 	default:
 		return nil
 	}
+}
+
+func ReadFile(filePath string) string {
+	r, _ := ReadFileLines(filePath)
+	return strings.Join(r, "\n")
+}
+
+func ReadFileLines(filePath string) ([]string, error) {
+	result := []string{}
+	b, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		logutl.Error(err)
+		return result, err
+	}
+	s := string(b)
+	for _, lineStr := range strings.Split(s, "\n") {
+		lineStr = strings.TrimSpace(lineStr)
+		if lineStr == "" {
+			continue
+		}
+		result = append(result, lineStr)
+	}
+	return result, nil
+
 }
