@@ -10,16 +10,11 @@ const (
 	ANY
 )
 
-type HttpParam struct {
+type Param struct {
 	Method  MethodType
 	Url     string
 	Header  map[string]string
 	Body    map[string]interface{}
-	Result *HttpResponse
-}
-
-type HttpResponse struct {
-	Err error
-	Result interface{}
-	IsSuccessChan chan bool
+	Failed  func(error)
+	Success func(string)
 }

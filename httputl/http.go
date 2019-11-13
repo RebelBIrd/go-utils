@@ -14,35 +14,22 @@ import (
 	"strings"
 )
 
-func DoHttp(methodType MethodType, url string, header map[string]string, body map[string]interface{}, response *HttpResponse) {
-	response.IsSuccessChan = make(chan bool)
-	doNetWork(HttpParam{
-		Method: methodType,
-		Url:    url,
-		Header: header,
-		Body:   body,
-		Result: response,
-	})
-}
-
-func doNetWork(param HttpParam) {
+func DoHttp(param Param)  {
 	var client = &http.Client{}
 	var bodyStr = ""
 	if len(param.Body) > 0 {
 		for key, value := range param.Body {
 			var val string
 			switch value.(type) {
-			case string:
-				val = value.(string)
-			case int:
-				val = strconv.Itoa(value.(int))
+			case string: val = value.(string)
+			case int: val = strconv.Itoa(value.(int))
 			default:
 				v, _ := json.Marshal(value)
 				val = string(v)
 			}
 			bodyStr += key + "=" + val + "&"
 		}
-		bodyStr = bodyStr[0 : len(bodyStr)-1]
+		bodyStr = bodyStr[0: len(bodyStr) - 1]
 	}
 	var method = ""
 	switch param.Method {
@@ -61,8 +48,7 @@ func doNetWork(param HttpParam) {
 	}
 	req, err := http.NewRequest(method, param.Url, strings.NewReader(bodyStr))
 	if err != nil {
-		param.Result.Err = err
-		param.Result.IsSuccessChan <- false
+		param.Failed(err)
 	} else {
 		if len(param.Header) > 0 {
 			for key, value := range param.Header {
@@ -71,22 +57,14 @@ func doNetWork(param HttpParam) {
 		}
 		resp, err := client.Do(req)
 		if err != nil {
-			param.Result.Err = err
-			param.Result.IsSuccessChan <- false
+			param.Failed(err)
 		} else {
 			defer resp.Body.Close()
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				param.Result.Err = err
-				param.Result.IsSuccessChan <- false
+				param.Failed(err)
 			} else {
-				err = json.Unmarshal(body, param.Result.Result)
-				if err != nil {
-					param.Result.Err = err
-					param.Result.IsSuccessChan <- false
-				} else {
-					param.Result.IsSuccessChan <- true
-				}
+				param.Success(string(body))
 			}
 		}
 	}
