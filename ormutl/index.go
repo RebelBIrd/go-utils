@@ -192,13 +192,14 @@ func (engine *OrmEngine) Remove(tableName string, where []string, values []inter
 }
 
 func (engine *OrmEngine) GetBoolField(model interface{}) (fields []string) {
+	fields = []string{}
 	t := reflect.TypeOf(model)
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
 	if t.Kind() != reflect.Struct {
 		log.Println("Check type error not Struct")
-		return nil
+		return
 	}
 	fieldNum := t.NumField()
 	result := make([]string, 0, fieldNum)

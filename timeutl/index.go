@@ -43,6 +43,15 @@ func (t *Time) UnmarshalJSON(data []byte) (err error) {
 	return
 }
 
+func (t *Time) UnmarshalString(data string) (err error) {
+	now, err := time.ParseInLocation(timeFormat, data, time.Local)
+	if err != nil {
+		fmt.Println(err)
+	}
+	*t = Time(now)
+	return
+}
+
 func (t Time) MarshalJSON() ([]byte, error) {
 	b := make([]byte, 0, len(timeFormat)+2)
 	b = append(b, '"')
