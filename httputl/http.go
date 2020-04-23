@@ -2,8 +2,8 @@ package httputl
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/qinyuanmao/go-utils/logutl"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -12,24 +12,28 @@ import (
 	"path"
 	"strconv"
 	"strings"
+
+	"github.com/qinyuanmao/go-utils/logutl"
 )
 
-func DoHttp(param Param)  {
+func DoHttp(param Param) {
 	var client = &http.Client{}
 	var bodyStr = ""
 	if len(param.Body) > 0 {
 		for key, value := range param.Body {
 			var val string
 			switch value.(type) {
-			case string: val = value.(string)
-			case int: val = strconv.Itoa(value.(int))
+			case string:
+				val = value.(string)
+			case int:
+				val = strconv.Itoa(value.(int))
 			default:
 				v, _ := json.Marshal(value)
 				val = string(v)
 			}
 			bodyStr += key + "=" + val + "&"
 		}
-		bodyStr = bodyStr[0: len(bodyStr) - 1]
+		bodyStr = bodyStr[0 : len(bodyStr)-1]
 	}
 	var method = ""
 	switch param.Method {
@@ -48,7 +52,7 @@ func DoHttp(param Param)  {
 	}
 	req, err := http.NewRequest(method, param.Url, strings.NewReader(bodyStr))
 	if err != nil {
-		param.Failed(err)
+		param.Failed(-1000, err)
 	} else {
 		if len(param.Header) > 0 {
 			for key, value := range param.Header {
@@ -57,14 +61,18 @@ func DoHttp(param Param)  {
 		}
 		resp, err := client.Do(req)
 		if err != nil {
-			param.Failed(err)
+			param.Failed(-1000, err)
 		} else {
 			defer resp.Body.Close()
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				param.Failed(err)
+			if resp.StatusCode != http.StatusOK {
+				param.Failed(resp.StatusCode, errors.New(resp.Status))
 			} else {
-				param.Success(string(body))
+				body, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					param.Failed(-999, err)
+				} else {
+					param.Success(string(body))
+				}
 			}
 		}
 	}

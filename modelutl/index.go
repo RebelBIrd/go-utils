@@ -1,12 +1,13 @@
 package modelutl
 
 import (
-	"github.com/qinyuanmao/go-utils/logutl"
-	"github.com/qinyuanmao/go-utils/ormutl"
-	"github.com/qinyuanmao/go-utils/sliceutl"
 	"log"
 	"reflect"
 	"strings"
+
+	"github.com/qinyuanmao/go-utils/logutl"
+	"github.com/qinyuanmao/go-utils/ormutl"
+	"github.com/qinyuanmao/go-utils/sliceutl"
 )
 
 func Exist(id interface{}, model interface{}) bool {
@@ -71,9 +72,9 @@ func SaveArray(m interface{}) (err error) {
 	return
 }
 
-func Update(id interface{}, model interface{}) (err error) {
+func Update(id interface{}, model interface{}, cols ...string) (err error) {
 	if Exist(id, model) {
-		if _, err = ormutl.GetEngine().NoAutoCondition().UseBool(GetBoolField(model)...).ID(id).Update(model); err != nil {
+		if _, err = ormutl.GetEngine().NoAutoCondition().UseBool(GetBoolField(model)...).MustCols(cols...).ID(id).Update(model); err != nil {
 			logutl.Error(err.Error())
 			return err
 		}
@@ -104,7 +105,7 @@ func Delete(id interface{}, model interface{}) (err error) {
 
 func Remove(tableName string, where []string, values []interface{}) (err error) {
 	w := strings.Join(where, " And ")
-	if _, err := ormutl.GetEngine().Exec("Delete From `"+ tableName +"` Where " + w, values); err != nil {
+	if _, err := ormutl.GetEngine().Exec("Delete From `"+tableName+"` Where "+w, values); err != nil {
 		logutl.Error(err)
 	}
 	return

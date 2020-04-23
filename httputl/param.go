@@ -15,6 +15,6 @@ type Param struct {
 	Url     string
 	Header  map[string]string
 	Body    map[string]interface{}
-	Failed  func(error)
+	Failed  func(int, error)
 	Success func(string)
 }

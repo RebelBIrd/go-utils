@@ -1,11 +1,12 @@
 package ormutl
 
 import (
-	"github.com/go-xorm/core"
-	"github.com/go-xorm/xorm"
+	"strings"
+
 	"github.com/qinyuanmao/go-utils/fileutl"
 	"github.com/qinyuanmao/go-utils/logutl"
-	"strings"
+	"xorm.io/core"
+	"xorm.io/xorm"
 )
 
 type SqliteConf struct {
@@ -34,7 +35,6 @@ func (engine *SqliteConf) InitTables(initBlock func(interface{}), beans ...inter
 	}
 }
 
-
 func (conf *SqliteConf) InitSqlite() {
 	if !strings.HasSuffix(conf.DbPath, "/") {
 		conf.DbPath += "/"
@@ -42,7 +42,7 @@ func (conf *SqliteConf) InitSqlite() {
 	fileutl.PathExistOrCreate(conf.DbPath)
 	if conf.Engine == nil {
 		var err error
-		conf.Engine, err = xorm.NewEngine("sqlite", conf.DbPath + conf.DbName)
+		conf.Engine, err = xorm.NewEngine("sqlite", conf.DbPath+conf.DbName)
 		if err != nil {
 			logutl.Error(err.Error())
 		} else {

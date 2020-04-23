@@ -1,12 +1,13 @@
 package ormutl
 
 import (
-	"github.com/go-xorm/xorm"
-	"github.com/qinyuanmao/go-utils/logutl"
-	"github.com/qinyuanmao/go-utils/sliceutl"
 	"log"
 	"reflect"
 	"strings"
+
+	"github.com/qinyuanmao/go-utils/logutl"
+	"github.com/qinyuanmao/go-utils/sliceutl"
+	"xorm.io/xorm"
 )
 
 type OrmEngine struct {
